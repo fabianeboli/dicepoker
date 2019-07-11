@@ -1,0 +1,41 @@
+.dices
+    display: flex
+    flex-wrap: wrap
+    justify-content: center
+    // animation: rollingAnimation 0.2s ease-out
+
+.rollingAnimation
+    animation: rollingAnimation 0.2s ease-out
+
+.rollButton
+    text-align: center
+    background-color: #007ace
+    color: white
+    font-weight: 700
+    font-size: 2.8em
+    padding: 15px
+    border: none
+    border-radius: 8px
+    margin: 0 auto
+    display: flex
+    box-shadow: 0 9px #bbb
+
+.rollButton:active 
+    box-shadow: 0 3px #bbb
+    background-color: #007aca
+    transform: translateY(4px)
+
+
+@keyframes rollingAnimation 
+    0% 
+        transform: translate(15%, 1%)
+    25% 
+        transform: translate(-5%, -1%)
+    50% 
+        transform: translate(5%, 1%)
+    75% 
+        transform: translate(-3%, -1%)
+    85% 
+        transform: translate(3%, 1%)
+    100% 
+        transform: translate(0%, 0%)
