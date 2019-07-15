@@ -10,12 +10,6 @@ enum buttonText {
     idle = 'Roll dices',
     rolling = 'Rolling...'
 }
-
-enum Hand {
-    player,
-    enemy
-}
-
 interface State {
     plDices: die[],
     enDices: die[],
@@ -36,21 +30,93 @@ type die = {
 const dicesList: die[] = [{ number: 1, icon: faDiceOne }, { number: 2, icon: faDiceTwo }, { number: 3, icon: faDiceThree },
 { number: 4, icon: faDiceFour }, { number: 5, icon: faDiceFive }, { number: 6, icon: faDiceSix }]
 
+const checkPairs = (sortedDice: number[], numOfSearchedPairs: number): boolean => {
+    const sd = sortedDice;
+    let numOfPairs = 0;
+    for (let i = 0; i < sd.length - 1; i++) {
+        const currentDie = sd[i];
+        const nextDie = sd[i + 1];
+        if (currentDie === nextDie) {
+            ++i;
+            ++numOfPairs;
+            if (numOfPairs === numOfSearchedPairs) {
+                return true
+            }
+        }
+    }
+    return false;
+}
+
+
+
+const checkNKinds = (sortedDice: number[], nKinds: number): boolean => {
+    const sd = sortedDice;
+    const allowedBadDies = sd.length - nKinds;
+    let badDies = 0;
+    for (let i = 0; i < sd.length - 1; i++) {
+        const currentDie = sd[i];
+        const nextDie = sd[i + 1];
+        if (currentDie !== nextDie) { badDies += 1 }
+        if (badDies > allowedBadDies) { return false }
+    }
+    return true;
+}
+
+export const checkFullHouse = (sortedDice: number[]): boolean => {
+    const sd = sortedDice;
+    for (let i = 0; i < sd.length - 2; i++) {
+        const firstDie = sd[i];
+        const secondDie = sd[i + 1];
+        const thirdDie = sd[i + 2];
+        if (firstDie === secondDie && secondDie === thirdDie) {
+         const potentialPair = sd.splice(i, 3)
+            if (checkPairs(potentialPair, 1)) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
+export const compareArrays = (array1: any[], array2: any[]) => {
+    let i = array1.length;
+    while (i--) {
+        if (array1[i] !== array2[i]) return false;
+    }
+    return true
+}
+
+export const checkStraight = (sortedDice: number[]): boolean => { return compareArrays(sortedDice, [1, 2, 3, 4, 5]) || compareArrays(sortedDice, [2, 3, 4, 5, 6]) ? true : false }
+
+export const randomizeDicesSet = (dices: die[] = dicesList, numberOfDies: number = dices.length - 1): die[] => {
+    const randomDie = () => Math.floor(Math.random() * dicesList.length)
+    let rolledDices: die[] = []
+    for (let i = 0; i < numberOfDies; i++) {
+        rolledDices = [...rolledDices, dices[randomDie()]]
+    }
+    return rolledDices
+}
+
+const testPair = [1, 1, 2, 3, 4].sort();
+const testDoublePair = [1, 1, 2, 4, 4].sort();
+const testThreeOfAKind = [1, 3, 4, 4, 4].sort();
+const testFourOfAKind = [3, 3, 3, 3, 5].sort();
+const testFiveOfAKind = [4, 4, 4, 4, 4].sort();
+const testStraight = [2, 3, 4, 5, 6].sort();
+const testFullHouse = [2, 5, 5, 2, 5].sort();
+
+console.log("---PAIR TEST: ", checkPairs(testPair,1), testPair)
+console.log("---DOUBLE PAIR TEST: ", checkPairs(testDoublePair, 2), testDoublePair)
+console.log("---THREE OF A KIND TEST: ", checkNKinds(testThreeOfAKind, 3), testThreeOfAKind)
+console.log("---FOUR OF A KIND TEST: ", checkNKinds(testFourOfAKind, 4), testFourOfAKind)
+console.log("---FIVE OF A KIND TEST: ", checkNKinds(testFiveOfAKind, 5), testFiveOfAKind)
+console.log("---STRAIGHT TEST: ", checkStraight(testStraight), testStraight)
+console.log("---FULLHOUSE TEST: ", checkFullHouse(testFullHouse), testFullHouse)
 
 export const RollDice = () => {
-
-    const randomizeDicesSet = (dices: die[], numberOfDies: number = dices.length): die[] => {
-        const randomDie = () => Math.floor(Math.random() * dicesList.length)
-        let rolledDices:die[] = []
-        for (let i = 0; i < numberOfDies; i++) {
-            rolledDices = [...rolledDices, dices[randomDie()]]
-        }
-        return rolledDices
-    }
-
     const [state, setState] = useState<State>({
-        plDices: randomizeDicesSet(dicesList),
-        enDices: randomizeDicesSet(dicesList),
+        plDices: [],
+        enDices: [],
         buttonText: buttonText.idle,
         dicesStyle: styles.dices,
         round: 1,
@@ -61,15 +127,16 @@ export const RollDice = () => {
     })
 
     const rollSet = (st: State) => {
-        const plHandPoints = calculateHand(st.plDices);
-        const enHandPoints = calculateHand(st.enDices);
+        const plHand = randomizeDicesSet()
+        const enHand = randomizeDicesSet()
+        const plHandPoints = calculateHand(plHand);
+        const enHandPoints = calculateHand(enHand);
         const plHandName = HandName(plHandPoints);
         const enHandName = HandName(enHandPoints);
-
         return {
             ...st,
-            plDices: randomizeDicesSet(dicesList),
-            enDices: randomizeDicesSet(dicesList),
+            plDices: plHand,
+            enDices: enHand,
             buttonText: buttonText.idle,
             dicesStyle: `${styles.dices}`,
             round: st.round + 1,
@@ -77,8 +144,7 @@ export const RollDice = () => {
             enPoints: st.enPoints + enHandPoints,
             plHandName: plHandName,
             enHandName: enHandName
-
-        }    
+        }
     }
 
     const rollingAnimation = (st: State) => {
@@ -92,126 +158,49 @@ export const RollDice = () => {
     const rollDice = () => {
         setState(rollingAnimation)
         setTimeout(() => setState(rollSet), 200)
-        // calculateHand(state.plDices, Hand.player);
-        // calculateHand(state.enDices, Hand.enemy);
-        
     }
 
     const HandName = (points: number): string => {
-        switch(points){
+        switch (points) {
             case 2000:
                 return 'Full House'
             case 1500:
                 return 'Straight'
-            case 1000: 
+            case 1000:
                 return 'Five of a Kind'
-            case 800: 
+            case 800:
                 return 'Four of a Kind'
-            case 400: 
+            case 400:
                 return 'Three of a Kind'
-            case 200: 
+            case 200:
                 return 'Double Pair'
-            case 100: 
-                return 'Double Pair'
+            case 100:
+                return 'Pair'
             default: return 'Buck'
         }
     }
 
     const calculateHand = (diceSet: die[]): number => {
-        const diceInNumbers: number[] = diceSet.map(el => el.number) 
-        const sortedDice: number[] = diceInNumbers.sort()
-
-        if(checkFullHouse(sortedDice)) { return 2000 }
-        else if(checkStraight(sortedDice)) { return 1500 }
-        else if(checkFiveOfAKind(sortedDice)) { return 1000 }
-        else if(checkFourOfAKind(sortedDice)) { return 800 }
-        else if(checkThreeOfAKind(sortedDice)) { return 400 }
-        else if(checkDoublePair(sortedDice)) { return 200 }
-        else if(checkPair(sortedDice)) { return 100 }
-        else { return 0 }
+        const diceInNumbers: number[] = diceSet.map(el => el.number);
+        const sortedDice: number[] = diceInNumbers.sort();
+        console.log("DICEINNUMBERS: ", diceInNumbers, "SORTED DICE", sortedDice);
+        if (checkStraight(sortedDice)) { return 1500; }
+        else if (checkNKinds(sortedDice, 5)) { return 1000; }
+        else if (checkNKinds(sortedDice, 4)) { return 800; }
+        else if (checkFullHouse(sortedDice)) { return 2000; }
+        else if (checkNKinds(sortedDice, 3)) { return 400; }
+        else if (checkPairs(sortedDice, 2)) { return 200; }
+        else if (checkPairs(sortedDice, 1)) { return 100; }
+        else { return 0; }
 
     }
 
-    const checkPair = (sortedDice: number[]): boolean => {
-        const sd = sortedDice
-        for(let i = 0; i < sd.length - 1; i++) {
-            const currentDie = sd[i];
-            const nextDie = sd[i + 1];
-            if(currentDie === nextDie) { return true } 
-        } 
-        return false
-    }
-    
-    const checkDoublePair = (sortedDice: number[]): boolean => {
-        const sd = sortedDice
-        for(let i = 0; i < sd.length - 1;i++) {
-            const currentDie = sd[i];
-            const nextDie = sd[i + 1];
-            if(currentDie === nextDie) { 
-                checkPair(sortedDice.splice(i, 2))
-                return true;
-            } 
-        }
-        return false;
-    }
-
-    const checkThreeOfAKind = (sortedDice: number[]): boolean => {
-        const sd = sortedDice
-        for(let i = 0; i < sd.length - 2;i++) {
-            const firstDie = sd[i];
-            const secondDie = sd[i + 1];
-            const thirdDie = sd[i + 2];
-            if(firstDie === secondDie && secondDie === thirdDie) { 
-                return true
-            } 
-        }
-        return false
-    }
-
-    const checkFourOfAKind = (sortedDice: number[]): boolean => {
-        const sd = sortedDice
-        let badDies = 0
-        for(let i = 0; i < sd.length - 2;i++) {
-            const currentDie = sd[i];
-            const nextDie = sd[i + 1];
-            if(currentDie !== nextDie) { ++badDies }
-            if(badDies >= 2) { return false } 
-        }
-        return true
-    }
-    
-    const checkFiveOfAKind = (sortedDice: number[]): boolean => {
-        const sd = sortedDice
-        let badDies = 0
-        for(let i = 0; i < sd.length - 2;i++) {
-            const currentDie = sd[i];
-            const nextDie = sd[i + 1];
-            if(currentDie !== nextDie) { ++badDies }
-            if(badDies >= 1) { return false } 
-        }
-        return true
-    }
-
-    const checkFullHouse = (sortedDice: number[]): boolean => {
-        const sd = sortedDice
-        for(let i = 0; i < sd.length - 2;i++) {
-            const firstDie = sd[i];
-            const secondDie = sd[i + 1];
-            const thirdDie = sd[i + 2];
-            if(firstDie === secondDie && secondDie === thirdDie) { 
-                return checkPair(sortedDice.splice(i, 3))
-            } 
-        }
-        return false
-    }
-
-    const checkStraight = (sortedDice: number[]): boolean => [1,2,3,4,5,6] === sortedDice 
 
     const presentDices = (diceSet: die[]) => diceSet.map(el => <Die numberOfDies={el.icon} />)
 
     return (
         <>
-        {console.log(state)}
+            {console.log(state)}
             <div>
                 <div>
                     <h3 className={styles.handName}>Enemy's set: {state.enHandName} <span className={styles.enemyPoints}>{state.enPoints} Pts</span></h3>
@@ -227,3 +216,72 @@ export const RollDice = () => {
         </>
     )
 }
+
+
+
+// export const checkPair = (sortedDice: number[]): boolean => {
+//     const sd = sortedDice
+//     for (let i = 0; i < sd.length - 1; i++) {
+//         const currentDie = sd[i];
+//         const nextDie = sd[i + 1];
+//         if (currentDie === nextDie) {
+//             console.log(currentDie, nextDie)
+//             return true
+//         }
+//     }
+//     return false
+// }
+
+
+// export const checkDoublePair = (sortedDice: number[]): boolean => {
+//     const sd = sortedDice
+//     let numOfPairs = 0
+//     for (let i = 0; i < sd.length - 1; i++) {
+//         const currentDie = sd[i];
+//         const nextDie = sd[i + 1];
+//         if (currentDie === nextDie) {
+//             ++i;
+//             ++numOfPairs;
+//             if (numOfPairs === 2) { return true }
+//         }
+//     }
+//     return false;
+// }
+
+// export const checkThreeOfAKind = (sortedDice: number[]): boolean => {
+//     const sd = sortedDice
+//     for (let i = 0; i < sd.length - 2; i++) {
+//         const firstDie = sd[i];
+//         const secondDie = sd[i + 1];
+//         const thirdDie = sd[i + 2];
+//         if (firstDie === secondDie && secondDie === thirdDie) {
+//             return true
+//         }
+//     }
+//     return false
+// }
+
+// export const checkFourOfAKind = (sortedDice: number[]): boolean => {
+//     const sd = sortedDice
+//     let badDies = 0
+//     for (let i = 0; i < sd.length - 1; i++) {
+//         const currentDie = sd[i];
+//         const nextDie = sd[i + 1];
+//         console.log(currentDie,nextDie, sd[i], sd[i+1], sd.length - 1)
+//         if (currentDie !== nextDie) { ++badDies }
+//         if (badDies >= 2) { return false; }
+//     }
+//     return true
+// }
+
+// export const checkFiveOfAKind = (sortedDice: number[]): boolean => {
+//     const sd = sortedDice
+//     let badDies = 0
+//     for (let i = 0; i < sd.length - 1; i++) {
+//         const currentDie = sd[i];
+//         const nextDie = sd[i + 1];
+//         if (currentDie !== nextDie) { badDies += 1; }
+//         if (badDies !== 0) { console.log('false'); return false; }
+//     }
+//     return true
+// }
