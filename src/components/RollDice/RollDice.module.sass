@@ -46,6 +46,25 @@
     font-weight: 700
     margin: 1%
 
+.handStats
+    display: flex
+    flex-wrap: wrap
+    color: white
+    font-weight: 700
+    text-align: center
+    margin: 0 auto
+    padding: 15px
+    justify-content: center
+    flex-direction: column
+    
+
+.player
+    @extend .handStats
+    background-color: #22aa44
+.enemy 
+    @extend .handStats
+    background-color: #cd1111
+
 @keyframes rollingAnimation 
     0% 
         transform: translate(15%, 1%)
