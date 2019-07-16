@@ -1,9 +1,6 @@
 import React, { useState } from 'react'
 import styles from './RollDice.module.sass'
-import { tsConstructorType } from '@babel/types';
 import { faDiceOne, faDiceTwo, faDiceThree, faDiceFour, faDiceFive, faDiceSix, IconDefinition } from '@fortawesome/free-solid-svg-icons'
-import { number } from 'prop-types';
-import { Icon } from '@fortawesome/fontawesome-svg-core';
 import { Die } from '../Die/Die';
 
 enum buttonText {
@@ -19,7 +16,7 @@ interface State {
     plPoints: any,
     enPoints: any,
     plHandName: string,
-    enHandName: string
+    enHandName: string,
 }
 
 type die = {
@@ -47,17 +44,17 @@ const checkPairs = (sortedDice: number[], numOfSearchedPairs: number): boolean =
     return false;
 }
 
-const checkNKinds = (sortedDice: number[], nKinds: number): boolean => {
+const checkNKinds = (sortedDice: number[], Nkind: number): boolean => {
     const sd = sortedDice;
-    const allowedBadDies = sd.length - nKinds;
-    let badDies = 0;
+    let sameNeighbourDies = 0;
+    console.log(sortedDice)
     for (let i = 0; i < sd.length - 1; i++) {
         const currentDie = sd[i];
         const nextDie = sd[i + 1];
-        if (currentDie !== nextDie) { badDies += 1 }
-        if (badDies > allowedBadDies) { return false }
+        if (currentDie === nextDie) { sameNeighbourDies += 1 }
     }
-    return true;
+    if (sameNeighbourDies === Nkind - 1) { return true }
+    return false;
 }
 
 export const checkFullHouse = (sortedDice: number[]): boolean => {
@@ -66,9 +63,10 @@ export const checkFullHouse = (sortedDice: number[]): boolean => {
         const firstDie = sd[i];
         const secondDie = sd[i + 1];
         const thirdDie = sd[i + 2];
+        console.log(firstDie, secondDie, thirdDie)
         if (firstDie === secondDie && secondDie === thirdDie) {
-         const potentialPair = sd.splice(i, 3)
-            if (checkPairs(potentialPair, 1)) {
+         sd.splice(i, 3)
+            if (checkPairs(sd, 1)) {
                 return true
             }
         }
@@ -94,6 +92,21 @@ export const randomizeDicesSet = (dices: die[] = dicesList, numberOfDies: number
     }
     return rolledDices
 }
+const testPair = [1, 1, 2, 3, 4].sort();
+const testDoublePair = [1, 1, 2, 4, 4].sort();
+const testThreeOfAKind = [1, 3, 4, 4, 4].sort();
+const testFourOfAKind = [2, 2, 2, 2, 4].sort();
+const testFiveOfAKind = [4, 4, 4, 4, 4].sort();
+const testStraight = [2, 3, 4, 5, 6].sort();
+const testFullHouse = [2, 5, 5, 2, 5].sort();
+
+console.log("---PAIR TEST: ", checkPairs(testPair,1), testPair)
+console.log("---DOUBLE PAIR TEST: ", checkPairs(testDoublePair, 2), testDoublePair)
+console.log("---THREE OF A KIND TEST: ", checkNKinds(testThreeOfAKind, 3), testThreeOfAKind)
+console.log("---FOUR OF A KIND TEST: ", checkNKinds(testFourOfAKind, 4), testFourOfAKind)
+console.log("---FIVE OF A KIND TEST: ", checkNKinds(testFiveOfAKind, 5), testFiveOfAKind)
+console.log("---STRAIGHT TEST: ", checkStraight(testStraight), testStraight)
+console.log("---FULLHOUSE TEST: ", checkFullHouse(testFullHouse), testFullHouse)
 
 export const RollDice = () => {
     const [state, setState] = useState<State>({
@@ -125,7 +138,9 @@ export const RollDice = () => {
             plPoints: st.plPoints + plHandPoints,
             enPoints: st.enPoints + enHandPoints,
             plHandName: plHandName,
-            enHandName: enHandName
+            enHandName: enHandName, 
+            wonGames: 0, 
+            lostGames: 0
         }
     }
 
@@ -173,14 +188,12 @@ export const RollDice = () => {
         else if (checkPairs(sortedDice, 2)) { return 200; }
         else if (checkPairs(sortedDice, 1)) { return 100; }
         else { return 0; }
-
     }
 
     const presentDices = (diceSet: die[]) => diceSet.map(el => <Die numberOfDies={el.icon} />)
 
     return (
         <>
-            {console.log(state)}
             <div>
                 <div>
                     <h3 className={styles.handName}>Enemy's set: {state.enHandName} <span className={styles.enemyPoints}>{state.enPoints} Pts</span></h3>
