@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import styles from './RollDice.module.sass'
 import { faDiceOne, faDiceTwo, faDiceThree, faDiceFour, faDiceFive, faDiceSix, IconDefinition } from '@fortawesome/free-solid-svg-icons'
 import { Die } from '../Die/Die';
+import { nullLiteral, Function } from '@babel/types';
 
 enum buttonText {
     idle = 'Roll dices',
@@ -47,10 +48,11 @@ const checkPairs = (sortedDice: number[], numOfSearchedPairs: number): boolean =
 const checkNKinds = (sortedDice: number[], Nkind: number): boolean => {
     const sd = sortedDice;
     let sameNeighbourDies = 0;
-    console.log(sortedDice)
     for (let i = 0; i < sd.length - 1; i++) {
+        const previousDie = i === 0 ? sd[i] : sd[i - 1];
         const currentDie = sd[i];
         const nextDie = sd[i + 1];
+        if (previousDie !== currentDie) { sameNeighbourDies = 0 }
         if (currentDie === nextDie) { sameNeighbourDies += 1 }
     }
     if (sameNeighbourDies === Nkind - 1) { return true }
@@ -65,7 +67,7 @@ export const checkFullHouse = (sortedDice: number[]): boolean => {
         const thirdDie = sd[i + 2];
         console.log(firstDie, secondDie, thirdDie)
         if (firstDie === secondDie && secondDie === thirdDie) {
-         sd.splice(i, 3)
+            sd.splice(i, 3)
             if (checkPairs(sd, 1)) {
                 return true
             }
@@ -92,29 +94,14 @@ export const randomizeDicesSet = (dices: die[] = dicesList, numberOfDies: number
     }
     return rolledDices
 }
-const testPair = [1, 1, 2, 3, 4].sort();
-const testDoublePair = [1, 1, 2, 4, 4].sort();
-const testThreeOfAKind = [1, 3, 4, 4, 4].sort();
-const testFourOfAKind = [2, 2, 2, 2, 4].sort();
-const testFiveOfAKind = [4, 4, 4, 4, 4].sort();
-const testStraight = [2, 3, 4, 5, 6].sort();
-const testFullHouse = [2, 5, 5, 2, 5].sort();
 
-console.log("---PAIR TEST: ", checkPairs(testPair,1), testPair)
-console.log("---DOUBLE PAIR TEST: ", checkPairs(testDoublePair, 2), testDoublePair)
-console.log("---THREE OF A KIND TEST: ", checkNKinds(testThreeOfAKind, 3), testThreeOfAKind)
-console.log("---FOUR OF A KIND TEST: ", checkNKinds(testFourOfAKind, 4), testFourOfAKind)
-console.log("---FIVE OF A KIND TEST: ", checkNKinds(testFiveOfAKind, 5), testFiveOfAKind)
-console.log("---STRAIGHT TEST: ", checkStraight(testStraight), testStraight)
-console.log("---FULLHOUSE TEST: ", checkFullHouse(testFullHouse), testFullHouse)
-
-export const RollDice = () => {
+export const RollDice: React.FC = () => {
     const [state, setState] = useState<State>({
         plDices: [],
         enDices: [],
         buttonText: buttonText.idle,
         dicesStyle: styles.dices,
-        round: 1,
+        round: 0,
         plPoints: 0,
         enPoints: 0,
         plHandName: "",
@@ -138,8 +125,8 @@ export const RollDice = () => {
             plPoints: st.plPoints + plHandPoints,
             enPoints: st.enPoints + enHandPoints,
             plHandName: plHandName,
-            enHandName: enHandName, 
-            wonGames: 0, 
+            enHandName: enHandName,
+            wonGames: 0,
             lostGames: 0
         }
     }
@@ -192,20 +179,39 @@ export const RollDice = () => {
 
     const presentDices = (diceSet: die[]) => diceSet.map(el => <Die numberOfDies={el.icon} />)
 
+    const [game, setGame] = useState(false)
+    const newGame = () => {
+        return (
+            <>
+                <div>
+                    <div>
+                        <h3 className={styles.handName}>Enemy's set: {state.enHandName} <span className={styles.enemyPoints}>{state.enPoints} Pts</span></h3>
+                        <div className={state.dicesStyle}> {presentDices(state.enDices)} </div>
+                    </div>
+                    <div className={styles.round}>Round: {state.round}</div>
+                    <div>
+                        <h3 className={styles.handName}>Player's set: {state.plHandName} <span className={styles.playerPoints}>{state.plPoints} Pts</span></h3>
+                        <div className={state.dicesStyle}> {presentDices(state.plDices)} </div>
+                    </div>
+                </div>
+                <button className={styles.rollButton} onClick={() => rollDice()}>{state.buttonText}</button>
+            </>
+        )
+    }
+
+    const initialScreen = () => {
+       
+        return (
+            <>
+                <div className={styles.header}> Welcome to Dice Poker!</div>
+                <button className={styles.initialButton} onClick={() => {setGame(true); rollDice()}}> Roll the dices!! </button>
+            </>
+        )
+    }
+
     return (
         <>
-            <div>
-                <div>
-                    <h3 className={styles.handName}>Enemy's set: {state.enHandName} <span className={styles.enemyPoints}>{state.enPoints} Pts</span></h3>
-                    <div className={state.dicesStyle}> {presentDices(state.enDices)} </div>
-                </div>
-                <div className={styles.round}>Round: {state.round}</div>
-                <div>
-                    <h3 className={styles.handName}>Player's set: {state.plHandName} <span className={styles.playerPoints}>{state.plPoints} Pts</span></h3>
-                    <div className={state.dicesStyle}> {presentDices(state.plDices)} </div>
-                </div>
-            </div>
-            <button className={styles.rollButton} onClick={() => rollDice()}>{state.buttonText}</button>
+            {game == false ? initialScreen() : newGame()}
         </>
     )
 }
