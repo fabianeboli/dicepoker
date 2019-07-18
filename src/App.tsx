@@ -1,12 +1,11 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import styles from  './App.module.sass';
 import { RollDice } from './components/RollDice/RollDice';
 
 
 const App: React.FC = () => {
   return (
-    <div className="App">
+    <div className={styles.board}>
       <RollDice/>
     </div>
   );
