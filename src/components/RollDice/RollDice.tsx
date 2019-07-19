@@ -60,7 +60,7 @@ export const RollDice: React.FC = () => {
     const rollSet = (st: State) => {
         console.log(state.plDices)
         const plHand = st.round === 0 ? randomizeDicesSet() : rollSelectedDices(state.plDices)
-        const enHand = randomizeDicesSet()
+        const enHand =  st.round === 0 ? randomizeDicesSet() : enemyDecision(state.enDices)
         const plHandPoints = CalculateHand.calculateHand(plHand);
         const enHandPoints = CalculateHand.calculateHand(enHand);
         const plHandName = CalculateHand.HandName(plHandPoints);
@@ -77,6 +77,13 @@ export const RollDice: React.FC = () => {
             plHandName: plHandName,
             enHandName: enHandName,
         }
+    }
+
+    const enemyDecision = (diceSet: die[]): die[] => { 
+        if(CalculateHand.calculateHand(diceSet) <= CalculateHand.Points.Pair) { 
+            return randomizeDicesSet()
+        }
+        return diceSet
     }
 
     let diesToChange: any[] = [];

@@ -1,6 +1,6 @@
 import { die } from '../RollDice/RollDice'
 
-enum Points {
+export enum Points {
     FiveOfAKind = 2000,
     FourOfAKind = 1500,
     FullHouse = 1000,
