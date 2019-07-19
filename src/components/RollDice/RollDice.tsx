@@ -79,24 +79,20 @@ export const RollDice: React.FC = () => {
         }
     }
 
-    let diesToStay: any[] = [];
+    let diesToChange: any[] = [];
     const click = (die: any) => {
         if(die.selected) {
-            diesToStay = [...diesToStay, die].map(el => el.id === undefined ? el : el.id)
-            diesToStay = [...new Set(diesToStay)]
+            diesToChange = [...diesToChange, die].map(el => el.id === undefined ? el : el.id)
+            diesToChange = [...new Set(diesToChange)]
         }  else {
-            diesToStay = diesToStay.filter(el => el !== die.id)
+            diesToChange = diesToChange.filter(el => el !== die.id)
         }       
-        console.log(die, 'WOOOOW', diesToStay);
     }
 
     const rollSelectedDices = (dices: die[]) => {
-        diesToStay = diesToStay.sort();
-        for(let i = 0; i < dices.length; i++) {
-            // [2,0,3]
-            if(diesToStay[i] === i) {
-                dices[i] = randomizeDie();
-            } 
+        const sortedDiesToChange = diesToChange.sort();
+        for(let i = 0; i < diesToChange.length; i++) {
+            dices[sortedDiesToChange[i]] = randomizeDie();
         }
         return dices
     }
@@ -130,10 +126,9 @@ export const RollDice: React.FC = () => {
             dicesStyle: `${styles.dices} ${styles.rollingAnimation}`
         })
     }   
-    // use idx in map function to create indexes for dies, which will allow to do sth like this: die[idx]
+
     const presentDices = (diceSet: die[]) => diceSet.map((el, idx) => <Die key={uuid()} id={idx}  selected={false} 
                             value={el.number}  click={click} currentTurn={state.round} numberOfDies={el.icon} />)
-
     const [game, setGame] = useState(false)
     const newGame = () => {
         const turns = state.round === 0 ? 1 : state.round;

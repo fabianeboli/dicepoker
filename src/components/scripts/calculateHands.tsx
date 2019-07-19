@@ -1,5 +1,16 @@
 import { die } from '../RollDice/RollDice'
 
+enum Points {
+    FiveOfAKind = 2000,
+    FourOfAKind = 1500,
+    FullHouse = 1000,
+    Straight = 800,
+    ThreeOfAKind = 400,
+    DoublePair = 200,
+    Pair = 100,
+    Buck = 0
+}
+
 export const checkPairs = (sortedDice: number[], numOfSearchedPairs: number): boolean => {
     const sd = sortedDice;
     let numOfPairs = 0;
@@ -27,7 +38,7 @@ export const checkFullHouse = (sortedDice: number[]): boolean => {
         if (firstDie === secondDie && secondDie !== thirdDie) {
             pairFound = true;
         }
-        if (firstDie === secondDie && secondDie === thirdDie) {
+        else if (firstDie === secondDie && secondDie === thirdDie) {
             const threeOfAKindFound = true;
             if (pairFound && threeOfAKindFound) {
                 return true
@@ -64,31 +75,31 @@ export const checkStraight = (sortedDice: number[]): boolean => { return compare
 export const calculateHand = (diceSet: die[]): number => {
     const diceInNumbers: number[] = diceSet.map(el => el.number);
     const sortedDice: number[] = diceInNumbers.sort();
-    if (checkStraight(sortedDice)) { return 1500; }
-    else if (checkNKinds(sortedDice, 5)) { return 1000; }
-    else if (checkNKinds(sortedDice, 4)) { return 800; }
-    else if (checkFullHouse(sortedDice)) { return 2000; }
-    else if (checkNKinds(sortedDice, 3)) { return 400; }
-    else if (checkPairs(sortedDice, 2)) { return 200; }
-    else if (checkPairs(sortedDice, 1)) { return 100; }
-    else { return 0; }
+    if (checkStraight(sortedDice)) { return Points.Straight; }
+    else if (checkNKinds(sortedDice, 5)) { return Points.FiveOfAKind; }
+    else if (checkNKinds(sortedDice, 4)) { return Points.FourOfAKind; }
+    else if (checkFullHouse(sortedDice)) { return Points.FullHouse; }
+    else if (checkNKinds(sortedDice, 3)) { return Points.ThreeOfAKind; }
+    else if (checkPairs(sortedDice, 2)) { return Points.DoublePair; }
+    else if (checkPairs(sortedDice, 1)) { return Points.Pair; }
+    else { return Points.Buck; }
 }
 
 export const HandName = (points: number): string => {
     switch (points) {
-        case 2000:
-            return 'Full House'
-        case 1500:
-            return 'Straight'
-        case 1000:
+        case Points.FiveOfAKind:
             return 'Five of a Kind'
-        case 800:
+        case Points.FourOfAKind:
             return 'Four of a Kind'
-        case 400:
+        case Points.FullHouse:
+            return 'Full House'
+        case Points.Straight:
+            return 'Straight'
+        case Points.ThreeOfAKind:
             return 'Three of a Kind'
-        case 200:
+        case Points.DoublePair:
             return 'Double Pair'
-        case 100:
+        case Points.Pair:
             return 'Pair'
         default: return 'Buck'
     }
