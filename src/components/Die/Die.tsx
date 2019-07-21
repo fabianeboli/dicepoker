@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styles from './Die.module.sass'
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
-
 interface IProps {
     id: number | string,
     numberOfDies: IconProp
@@ -12,11 +11,10 @@ interface IProps {
     currentTurn?: number,
     click: any
 }
-
  
 export const Die = (props: IProps) =>  {
     const changeDices = props.currentTurn === 1 ? styles.clickable : styles.unClickable;
-    const [selected, setSelected] = React.useState(false)
+    const [selected, setSelected] = React.useState(false);
     const selectedButton = selected ? styles.selected : ''; 
 
  
@@ -25,7 +23,6 @@ export const Die = (props: IProps) =>  {
         const selectedDie = !selected;
         const die = props.id;
         props.click({ id: die, selected: selectedDie });
-        console.log(props.value, selected, props.id);
         return props.value;
     }
 

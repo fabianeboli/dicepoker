@@ -52,9 +52,9 @@ export const RollDice: React.FC = () => {
     const randomizeDicesSet = (dices: die[] = dicesList, numberOfDies: number = dices.length - 1): die[] => {
         let rolledDices: die[] = []
         for (let i = 0; i < numberOfDies; i++) {
-            rolledDices = [...rolledDices, dices[randomDieIndex()]]
+            rolledDices = [...rolledDices, dices[randomDieIndex()]];
         }
-        return rolledDices
+        return rolledDices;
     }
 
     const rollSet = (st: State) => {
@@ -81,9 +81,9 @@ export const RollDice: React.FC = () => {
 
     const enemyDecision = (diceSet: die[]): die[] => { 
         if(CalculateHand.calculateHand(diceSet) <= CalculateHand.Points.Pair) { 
-            return randomizeDicesSet()
+            return randomizeDicesSet();
         }
-        return diceSet
+        return diceSet;
     }
 
     let diesToChange: any[] = [];
@@ -116,7 +116,7 @@ export const RollDice: React.FC = () => {
     const rollDice = () => {
         setState(rollingAnimation)
         setTimeout(() => setState(rollSet), 200)
-        if (state.round === 2) { setState(sumGame()) }
+        if (state.round === 2) { setState(sumGame()); }
     }
 
     const sumGame = () => {
@@ -152,8 +152,8 @@ export const RollDice: React.FC = () => {
                             <div className={styles.handName}>Enemy's set: {state.enHandName} </div>
                             <div className={styles.enemyPoints}>Points: {state.enPoints} Pts</div>
                         </div>
-
                     </div>
+                    
                     <div className={styles.round}>{roundGame}</div>
                     <div className={styles.player}>
                         <div>Won Games: <span className={styles.playerWonGames}>{state.wonGames}</span></div>
@@ -175,7 +175,7 @@ export const RollDice: React.FC = () => {
         return (
             <>
                 <div className={styles.header}> Welcome to Dice Poker!</div>
-                <button className={styles.initialButton} onClick={() => { setGame(true); rollDice() }}> Roll the dices!! </button>
+                <button className={styles.initialButton} onClick={() => { setGame(true); rollDice(); }}> Roll the dices!! </button>
             </>
         )
     }
